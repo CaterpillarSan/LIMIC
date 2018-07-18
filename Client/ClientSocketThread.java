@@ -81,7 +81,10 @@ class SocketClient implements Runnable {
 
 	public synchronized void readData(CommData data) {
 		String name = storage.storeRecvMsg(data.myId, data.getMsg());
-		System.out.println("\n>>> New message from "+name);
-		System.out.print("LIMIC > ");
+		if (data.myId == ClientCUI.current)
+			System.out.println("\n"+name+":"+data.getMsg());
+		else
+			System.out.println("\n>>> New message from "+name);
+		System.out.print("LIMIC ["+ClientCUI.dir+"] > ");
 	}
 }

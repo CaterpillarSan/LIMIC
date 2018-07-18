@@ -10,8 +10,8 @@ public class ClientCUI {
 	private MessageSender sender;
 	private ClientDataStorage storage;
 
-	private int current; // negative -> home dir, positive -> current viewing friend id 
-	private String dir = "Home";
+	public static int current; // negative -> home dir, positive -> current viewing friend id 
+	public static String dir = "Home";
 
 	public ClientCUI(MessageSender sender, ClientDataStorage storage) {
 		scan = new Scanner(System.in);
@@ -43,7 +43,7 @@ public class ClientCUI {
 					System.out.println("Cannot use send command when open Home dir.");
 				}
 				break;
-			case "addFriend":		// addFriend Hanako:12345
+			case "mkdir":		// mkdir Hanako:12345 = add friend
 				addFriend(input[1]);
 			case "ls":				// ls
 				if (current > 0) {
