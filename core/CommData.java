@@ -5,23 +5,20 @@ import java.io.Serializable;
 public class CommData implements Serializable {
 	// TODO 暗号化?
 	
-	// 送信先情報 //TODO グループ
-	public String ipTo;
-	public int portTo;
 	
 	// 送信内容
+	public int tag;
 	private String msg;
 
 	//送信元情報
-	public String ipFrom;
-	public int portFrom;
+	public int friendId;
+	public int myId;
 
-	public CommData(String ipTo, int portTo, String msg, String ipFrom, int portFrom) {
-		this.ipTo = ipTo;
-		this.portTo = portTo;
+	public CommData(int tag, String msg, int idTo, int idFrom) {
+		this.tag = tag;
 		this.msg = msg;
-		this.ipFrom = ipFrom;
-		this.portFrom = portFrom;
+		friendId = idTo;
+		myId = idFrom;
 	}
 
 	public String getMsg(){

@@ -13,8 +13,8 @@ public class ServerMain {
 	public static void main(String[] args) {
 		try {
 			isAlive = true;
-			// TODO portを複数に割り振り
-			(new ServerSocketThread(SERVER_PORT)).start();
+			ServerDataStorage storage = new ServerDataStorage();
+			(new ServerSocketThread(SERVER_PORT, storage)).start();
 		} catch (Exception e) {
 			isAlive = false;
 			DEBUG.err("Server Main die.",e);

@@ -19,11 +19,14 @@ public class ClientSocketThread extends Thread{
 	
 	static final int THREADPOOL_SIZE = 10;
 	ServerSocket ss;
+	ClientDataStorage storage;
 	ExecutorService exec;
 
-	protected ClientSocketThread(int port) {
+	protected ClientSocketThread(int port, ClientDataStorage storage) {
 		try {
 			ss = new ServerSocket(port);
+			ss.setSoTimeout(5000);
+			this.storage = storage;
 			exec = Executors.newFixedThreadPool(10);
 		} catch (Exception e) {
 			DEBUG.err("client socket cannot be established.",e);
@@ -32,12 +35,15 @@ public class ClientSocketThread extends Thread{
 
 	@Override
 	public void run() {
-		while(ClientMain.isRunning()){
+		while(ClientMain.isAlive){
 			try {
 				Socket sc = ss.accept();
-				exec.submit(new SocketClient(sc));
+				exec.submit(new SocketClient(sc,storage));
+			} catch (SocketTimeoutException e) {
+				continue;
 			} catch (Exception e) {
 				DEBUG.err("client socket cannot create Comm with Client.",e);
+				break;
 			}
 		}
 	}
@@ -46,9 +52,11 @@ public class ClientSocketThread extends Thread{
 class SocketClient implements Runnable {
 	Socket recvDataSc;
 	ObjectInputStream ois;
+	ClientDataStorage storage;
 
-	SocketClient(Socket sc) {
+	SocketClient(Socket sc, ClientDataStorage storage) {
 		recvDataSc = sc;
+		this.storage = storage;
 	}
 
 	@Override
@@ -71,8 +79,9 @@ class SocketClient implements Runnable {
 		}
 	}
 
-	public void readData(CommData data) {
-		// 安全性向上
-		ClientMain.outputData(data);
+	public synchronized void readData(CommData data) {
+		String name = storage.storeRecvMsg(data.myId, data.getMsg());
+		System.out.println("\n>>> New message from "+name);
+		System.out.print("LIMIC > ");
 	}
 }

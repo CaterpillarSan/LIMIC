@@ -4,7 +4,7 @@ public class DEBUG {
 
 	public static final boolean printLog = true;
 	public static final boolean printErr = true;
-	public static final boolean printStackTrace = true;
+	public static final boolean printStackTrace = false;
 
 	public static void log(String str) {
 		if (printLog)

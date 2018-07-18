@@ -8,59 +8,48 @@ import java.util.Scanner;
 public class ClientMain {
 
 	private static String CLIENT_IP = "localhost";
-	private static int CLIENT_PORT = 60000;
+	private static int CLIENT_PORT;
 
-	private static boolean isAlive;
-	private Scanner scan;
+	public static boolean isAlive;
 	private MessageSender sender;
 	private ClientSocketThread csThread;
+	private ClientDataStorage storage;
+	private ClientCUI cui;
 
 	// 個人データとか
 
 	public static void main (String[] args) {
-		if (null != args) CLIENT_PORT = Integer.parseInt(args[0]);
-		ClientMain main = new ClientMain();
+		Scanner scan = new Scanner(System.in);
+		System.out.print("Name: ");		String name = scan.next();
+		System.out.print("ID: "); 		int id = scan.nextInt();
+		System.out.print("Port: ");		CLIENT_PORT = scan.nextInt();
+
+		ClientMain main = new ClientMain(name, id);
 		main.doMain();
 	}
 	
-	public ClientMain() {
-		scan = new Scanner(System.in);
-		sender = new MessageSender(CLIENT_IP, CLIENT_PORT);
-		csThread = new ClientSocketThread(CLIENT_PORT);
+	public ClientMain(String name, int userId) {
+		sender = new MessageSender(userId);
+		storage = new ClientDataStorage(name,CLIENT_IP, CLIENT_PORT,userId, sender);
+		csThread = new ClientSocketThread(CLIENT_PORT,storage);
+		cui = new ClientCUI(sender, storage);
 	}
 
 	public void doMain() {
 		try {
+			// initiallize 
+			sender.initialComm(storage);
+
 			isAlive = true;
 			csThread.start();
 			
 			while(isAlive)
-				inputData();
+				isAlive = cui.inputCommand();
 		} catch (Exception e) {
 			isAlive = false;
 			DEBUG.err("Client Main die.",e);
 		}
 	}
 
-	public static boolean isRunning() {
-		return isAlive;
-	}
 
-	public static synchronized void outputData(CommData data) {
-		System.out.println(data.getMsg());
-	}
-
-	public void inputData(){
-		System.out.print("\n LIMIC > ");
-		String str = scan.next();
-		if (str.equals("exit")) {
-			isAlive = false;
-		return;
-		} 
-		
-		String ip = "localhost";
-		int port = 60001;
-		String msg = str;
-		sender.send(ip, port, msg);
-	}
 }
