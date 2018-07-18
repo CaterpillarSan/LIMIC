@@ -1,6 +1,7 @@
 package LIMIC.Client;
 
 import LIMIC.core.CONST;
+import LIMIC.core.UserData;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -15,9 +16,9 @@ public class ClientDataStorage {
 	protected int PORT;
 
 	protected HashMap<String, Integer> friendsNtoId;
-	protected HashMap<Integer, String> friendsIdtoN;
+	protected HashMap<Integer, UserData> friendDatas;
 
-	protected HashMap<Integer, LinkedBlockingQueue<String>> histories;
+
 
 	protected MessageSender sender;
 	
@@ -27,11 +28,10 @@ public class ClientDataStorage {
 		IP = ip;
 		PORT = port;
 		friendsNtoId = new HashMap<String,Integer>();
-		friendsIdtoN = new HashMap<Integer,String>();
-		histories = new HashMap<Integer, LinkedBlockingQueue<String>>();
+		friendDatas = new HashMap<Integer,UserData>();
 
 		friendsNtoId.put(name,userId);
-		friendsIdtoN.put(userId,name);
+		friendDatas.put(userId,new UserData(name,userId));
 
 		this.userId = userId;
 		this.sender = sender;
@@ -57,10 +57,8 @@ public class ClientDataStorage {
 
 	public void addFriend(String name, int id) {
 		friendsNtoId.put(name, id);
-		friendsIdtoN.put(id,name);
-		LinkedBlockingQueue queue = new LinkedBlockingQueue(10);
-		queue.add("This is the first talk with "+name+"!");
-		histories.put(id, queue);
+		UserData userdata = new UserData(name,id);
+		friendDatas.put(id,userdata);
 	}
 
 	public void showFriends() {
@@ -71,8 +69,9 @@ public class ClientDataStorage {
 
 	public String storeRecvMsg(int id, String str) {
 		try {
-			String name = friendsIdtoN.get(id);
-			LinkedBlockingQueue queue = histories.get(id);
+			UserData userdata = friendDatas.get(id);
+			String name = userdata.name;
+			LinkedBlockingQueue<String> queue = userdata.history;
 			if (queue.remainingCapacity() < 1) {
 				queue.poll();
 			}
@@ -85,8 +84,9 @@ public class ClientDataStorage {
 	}
 
 	public String storeSendMsg(int id, String str) {
+		UserData userdata = friendDatas.get(id);
 		String name = userName;
-		LinkedBlockingQueue queue = histories.get(id);
+		LinkedBlockingQueue queue = userdata.history;
 		if (queue.remainingCapacity() < 1) {
 			queue.poll();
 		}
@@ -96,7 +96,8 @@ public class ClientDataStorage {
 
 	public void outputTalk(String name) {
 		int id = friendsNtoId.get(name);
-		LinkedBlockingQueue queue = histories.get(id);
+		UserData userdata = friendDatas.get(id);
+		LinkedBlockingQueue queue = userdata.history;
 		for(Object msg : queue.toArray(new String[0])) {
 			System.out.println((String)msg);
 		}
